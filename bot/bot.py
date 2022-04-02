@@ -3,6 +3,7 @@ import logging
 import lightbulb
 import config
 import pymongo
+import lightbulb.ext.tasks
 
 log = logging.getLogger(__name__)
 
@@ -18,6 +19,7 @@ class Bot(lightbulb.BotApp):
         self.load_extensions_from("bot/exts")
         self.mongodb = pymongo.MongoClient(config.MONGO_DB_URI)
         self.db = self.mongodb.get_database("fa-azcrone").get_collection("seal")
+        lightbulb.ext.tasks.load(self)
 
     async def on_ready(self, event: hikari.StartedEvent) -> None:
         log.info("Logged in as %s", self.get_me().username)
