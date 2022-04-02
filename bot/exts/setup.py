@@ -19,7 +19,7 @@ async def setup_command(ctx: lightbulb.context.SlashContext) -> None:
 )
 @lightbulb.command(name="channel", description="بداء تثبيت القناة")
 @lightbulb.implements(lightbulb.commands.SlashSubCommand)
-async def setup_command(ctx: lightbulb.context.SlashContext) -> None:
+async def setup_channel(ctx: lightbulb.context.SlashContext) -> None:
     channel = ctx.options.channel
     data = ctx.bot.db.find_one({"_id": ctx.guild_id})
     if not data:
@@ -50,7 +50,30 @@ async def setup_command(ctx: lightbulb.context.SlashContext) -> None:
     ctx.bot.db.update_one({"_id": ctx.guild_id}, {"$set": {"channel": channel.id}})
     await ctx.respond("الله يجزيك الخير تم تثبيت القناة بنجاح, ملاحظه سيتم الإرسال حسب توقيت مكة المكرمه")
     
+@setup_command.child()
+@lightbulb.option(
+    name="role",
+    description="الرجاء اختيار الرتبة الذي تريد تثبيت البوت",
+    type=hikari.OptionType.ROLE,
+    required=False
+)
+@lightbulb.command(name="role", description="بداء تثبيت الرول")
+@lightbulb.implements(lightbulb.commands.SlashSubCommand)
+async def setup_role(ctx: lightbulb.context.SlashContext) -> None:
+    ...
 
+
+@setup_command.child()
+@lightbulb.option(
+    name="channel", 
+    description="الرجاء اختيار القناة الذي تريد رسالة اختيار الرول", 
+    type=hikari.OptionType.CHANNEL,
+    required=False
+)
+@lightbulb.command(name="message", description="بداء تثبيت الرساله")
+@lightbulb.implements(lightbulb.commands.SlashSubCommand)
+async def setup_message(ctx: lightbulb.context.SlashContext) -> None:
+    ...
 
 def load(bot: lightbulb.BotApp) -> None:
     bot.add_plugin(setup)
