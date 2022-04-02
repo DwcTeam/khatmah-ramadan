@@ -1,6 +1,6 @@
 import hikari
 import lightbulb
-
+import config
 
 setup = lightbulb.Plugin(__name__)
 
@@ -47,7 +47,7 @@ async def setup_channel(ctx: lightbulb.context.SlashContext) -> None:
                     ),
                 ]
             )
-        except hikari.errors.ForbiddenError:
+        except hikari.ForbiddenError:
             await ctx.respond("البوت لا يمتلك صلاحيات لصنع القناة", flags=hikari.MessageFlag.EPHEMERAL)
             return
     ctx.bot.db.update_one({"_id": ctx.guild_id}, {"$set": {"channel": channel.id}})
@@ -63,7 +63,27 @@ async def setup_channel(ctx: lightbulb.context.SlashContext) -> None:
 @lightbulb.command(name="role", description="بداء تثبيت الرول")
 @lightbulb.implements(lightbulb.commands.SlashSubCommand)
 async def setup_role(ctx: lightbulb.context.SlashContext) -> None:
-    ...
+    role = ctx.options.role
+    data = ctx.bot.db.find_one({"_id": ctx.guild_id})
+    if not data:
+        data = {"_id": ctx.guild_id, "channel": None, "role": None}
+        ctx.bot.db.insert_one(data)
+    if role and (data["role"] and data["role"] == role.id):
+        await ctx.respond("نعتذر منك البوت مثبت مسبقاً في هذه الرتبة", flags=hikari.MessageFlag.EPHEMERAL)
+        return
+    if not role:
+        try:
+            role = await ctx.bot.rest.create_role(
+                ctx.guild_id, 
+                "ختمة", 
+                reason="تثبيت البوت ختمة القرآن الكريم",
+                color=0xffd430,
+            )
+        except hikari.ForbiddenError:
+            await ctx.respond("البوت لا يمتلك صلاحيات لصنع الرتبة", flags=hikari.MessageFlag.EPHEMERAL)
+            return
+    ctx.bot.db.update_one({"_id": ctx.guild_id}, {"$set": {"role": role.id}})
+    await ctx.respond("الله يجزيك الخير تم تثبيت الرتبة بنجاح, ملاحظه سيتم أرسال منشن لجميع مالكين الرتبه")
 
 
 @setup_command.child()
@@ -71,12 +91,34 @@ async def setup_role(ctx: lightbulb.context.SlashContext) -> None:
     name="channel", 
     description="الرجاء اختيار القناة الذي تريد رسالة اختيار الرول", 
     type=hikari.OptionType.CHANNEL,
-    required=False
+    required=True
 )
 @lightbulb.command(name="message", description="بداء تثبيت الرساله")
 @lightbulb.implements(lightbulb.commands.SlashSubCommand)
 async def setup_message(ctx: lightbulb.context.SlashContext) -> None:
-    ...
+    channel = ctx.options.channel
+    data = ctx.bot.db.find_one({"_id": ctx.guild_id})
+    if not data:
+        data = {"_id": ctx.guild_id, "channel": None, "role": None}
+        ctx.bot.db.insert_one(data)
+    if channel and (data["channel"] and data["channel"] == channel.id):
+        await ctx.respond("نعتذر منك البوت مثبت بهاذه الفناة الرجاء اختبار قناه اخرى", flags=hikari.MessageFlag.EPHEMERAL)
+        return
+    component = ctx.bot.rest.build_action_row()
+    (
+        component.add_button(hikari.ButtonStyle.PRIMARY, "role_id")
+        .set_label("أضغط هنا")
+        .set_emoji(config.QURAN_EMOJI)
+        .add_to_container()
+    )
+    await ctx.bot.rest.create_message(
+        channel,
+        embed=hikari.Embed(
+            description="أذا كنت تريد الحصول على أشعار بعد كل صلاة أضغط على الزر في الأسفل"
+        ),
+        component=component
+    )
+
 
 def load(bot: lightbulb.BotApp) -> None:
     bot.add_plugin(setup)
