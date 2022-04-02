@@ -1,3 +1,5 @@
-hiakri
+hikari
 hikari-lightbulb
 pymongo[srv]
+requests
+schedule
