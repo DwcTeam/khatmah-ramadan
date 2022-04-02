@@ -10,7 +10,9 @@ general = lightbulb.Plugin(__name__)
 async def help_command(ctx: lightbulb.context.SlashContext) -> None:
     await ctx.respond(embed=hikari.Embed(
         description="""
-`/setup` - لتثبيت البوت ملاحظه يجب ان البوت يمتلك صلاحيات لصنع الروم
+`/setup channel` - لتثبيت القناة المراد أرسال الختمه بها
+`/setup role` - لتثبيت الرتبة المراد أرسال اشغار لها
+`/setup message` - لصنع رساله لأضافة الرتبه منها بشكل أختياري للأعضاء
 `/unsetup` - للإقاف الختمة من الخادم
 `/source` - الحصول على مصدر برمجة البوت
 """

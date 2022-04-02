@@ -6,11 +6,9 @@ interaction = lightbulb.Plugin(__name__)
 
 @interaction.listener(hikari.InteractionCreateEvent)
 async def interaction_create_event(event: hikari.InteractionCreateEvent) -> None:
-    if event.interaction.custom_id == "add_role" and event.interaction.type == hikari.InteractionType.BUTTON:
+    if event.interaction.type == hikari.InteractionType.MESSAGE_COMPONENT and event.interaction.custom_id == "add_role":
         guild_id = event.interaction.member.guild_id
         data = interaction.bot.db.find_one({"_id": guild_id})
-        if not data or data["channel"] != event.interaction.channel_id:
-            return
         if not data["role"] or not interaction.bot.cache.get_role(data["role"]):
             await event.app.rest.create_interaction_response(
                 interaction=event.interaction,

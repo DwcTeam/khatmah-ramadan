@@ -124,8 +124,8 @@ async def setup_message(ctx: lightbulb.context.SlashContext) -> None:
 @setup.command()
 @lightbulb.command(name="unsetup", description="ايقاف الختمة و حذف البيانات")
 @lightbulb.implements(lightbulb.commands.SlashCommand)
-async def setup_count(ctx: lightbulb.context.SlashContext) -> None:
-    ctx.db.delete_one({"_id": ctx.guild_id})
+async def unsetup_count(ctx: lightbulb.context.SlashContext) -> None:
+    ctx.bot.db.delete_one({"_id": ctx.guild_id})
     await ctx.respond("تم ايقاف الختمة و حذف البيانات")
 
 
