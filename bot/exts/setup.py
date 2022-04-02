@@ -29,6 +29,9 @@ async def setup_channel(ctx: lightbulb.context.SlashContext) -> None:
     if channel and (data["channel"] and data["channel"] == channel.id):
         await ctx.respond("نعتذر منك البوت مثبت مسبقاً في هذه القناة", flags=hikari.MessageFlag.EPHEMERAL)
         return
+    if channel and channel.type != hikari.ChannelType.GUILD_TEXT:
+        await ctx.respond("الرجاء التحقق من نوع القناة المحدده انها كتابيه", flags=hikari.MessageFlag.EPHEMERAL)
+        return
     if not channel:
         try:
             channel = await ctx.bot.rest.create_guild_text_channel(
