@@ -13,14 +13,22 @@ async def setup_command(ctx: lightbulb.context.SlashContext) -> None:
 @setup_command.child()
 @lightbulb.option(
     name="channel", 
-    description="الرجاء اختيار الروم الذي تريد تثبيت البوت", 
+    description="الرجاء اختيار القناة الذي تريد تثبيت البوت", 
     type=hikari.OptionType.CHANNEL,
     required=False
 )
-@lightbulb.command(name="channel", description="بداء تثبيت البوت")
+@lightbulb.command(name="channel", description="بداء تثبيت القناة")
 @lightbulb.implements(lightbulb.commands.SlashSubCommand)
 async def setup_command(ctx: lightbulb.context.SlashContext) -> None:
     channel = ctx.options.channel
+    data = ctx.bot.db.find_one({"_id": ctx.guild_id})
+    if not data:
+        data = {"_id": ctx.guild_id, "channel": None, "role": None}
+        ctx.bot.db.insert_one(data)
+    
+    if channel and (data["channel"] and data["channel"] == channel.id):
+        await ctx.respond("نعتذر منك البوت مثبت مسبقاً في هذه القناة", flags=hikari.MessageFlag.EPHEMERAL)
+        return
     if not channel:
         try:
             channel = await ctx.bot.rest.create_guild_text_channel(
@@ -39,10 +47,7 @@ async def setup_command(ctx: lightbulb.context.SlashContext) -> None:
         except hikari.errors.ForbiddenError:
             await ctx.respond("البوت لا يمتلك صلاحيات لصنع القناة", flags=hikari.MessageFlag.EPHEMERAL)
             return
-    data = ctx.bot.db.find_one({"_id": ctx.guild_id})
-    if not data:
-        data = {"_id": ctx.guild_id, "channel": channel.id, "role": None}
-        ctx.bot.db.insert_one(data)
+    ctx.bot.db.update_one({"_id": ctx.guild_id}, {"$set": {"channel": channel.id}})
     await ctx.respond("الله يجزيك الخير تم تثبيت القناة بنجاح, ملاحظه سيتم الإرسال حسب توقيت مكة المكرمه")
     
 
